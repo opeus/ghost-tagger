@@ -6,22 +6,35 @@ import * as path from "path";
 const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
 const PROMPT_PATH = path.join(process.cwd(), "lib", "descriptions-prompt.txt");
 
-const DEFAULT_PROMPT = `Analyze this article and generate THREE descriptions:
+const DEFAULT_PROMPT = `Analyze this article and generate metadata for SEO and social media:
 
 Title: {title}
 Content: {content}
 Existing Tags: {existing_tags}
 
-Generate:
-1. CUSTOM EXCERPT (MAXIMUM 300 CHARACTERS) - Most important
-2. META DESCRIPTION (MAXIMUM 160 CHARACTERS)
-3. OG DESCRIPTION (MAXIMUM 160 CHARACTERS)
+Generate 7 fields (can be similar/same across platforms):
+1. CUSTOM EXCERPT (300 chars) - Most important
+2. META TITLE (60 chars)
+3. META DESCRIPTION (160 chars)
+4. OG TITLE (60 chars)
+5. OG DESCRIPTION (160 chars)
+6. TWITTER TITLE (60 chars)
+7. TWITTER DESCRIPTION (200 chars)
 
-Return ONLY valid JSON:
+IMPORTANT:
+- ALL 7 FIELDS ARE REQUIRED - Do not omit any field
+- You can use the same text across similar fields
+- If a field would be the same as another, still include it in the output
+
+Return ONLY valid JSON with ALL 7 FIELDS:
 {
   "custom_excerpt": "...",
+  "meta_title": "...",
   "meta_description": "...",
-  "og_description": "..."
+  "og_title": "...",
+  "og_description": "...",
+  "twitter_title": "...",
+  "twitter_description": "..."
 }`;
 
 async function loadPrompt(): Promise<string> {
@@ -125,11 +138,23 @@ export async function POST(request: NextRequest) {
     if (descriptions.custom_excerpt && descriptions.custom_excerpt.length > 300) {
       descriptions.custom_excerpt = descriptions.custom_excerpt.substring(0, 297) + "...";
     }
+    if (descriptions.meta_title && descriptions.meta_title.length > 60) {
+      descriptions.meta_title = descriptions.meta_title.substring(0, 57) + "...";
+    }
     if (descriptions.meta_description && descriptions.meta_description.length > 160) {
       descriptions.meta_description = descriptions.meta_description.substring(0, 157) + "...";
     }
+    if (descriptions.og_title && descriptions.og_title.length > 60) {
+      descriptions.og_title = descriptions.og_title.substring(0, 57) + "...";
+    }
     if (descriptions.og_description && descriptions.og_description.length > 160) {
       descriptions.og_description = descriptions.og_description.substring(0, 157) + "...";
+    }
+    if (descriptions.twitter_title && descriptions.twitter_title.length > 60) {
+      descriptions.twitter_title = descriptions.twitter_title.substring(0, 57) + "...";
+    }
+    if (descriptions.twitter_description && descriptions.twitter_description.length > 200) {
+      descriptions.twitter_description = descriptions.twitter_description.substring(0, 197) + "...";
     }
 
     return NextResponse.json({ descriptions });

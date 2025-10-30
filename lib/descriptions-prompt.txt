@@ -1,35 +1,59 @@
-Analyze this article and generate THREE descriptions for SEO and social media:
+Analyze this article and generate metadata for SEO and social media:
 
 Title: {title}
 Content: {content}
 Existing Tags: {existing_tags}
 
-Generate the following descriptions:
+Generate these 7 fields (they can be similar or the same across platforms):
 
 1. CUSTOM EXCERPT (CRITICAL - MAXIMUM 300 CHARACTERS):
    - This is the MOST IMPORTANT field
    - Brief, engaging summary of the article
-   - Should entice readers to click and read more
    - MUST be 300 characters or less (HARD LIMIT)
-   - Count carefully - this cannot exceed 300 characters
 
-2. META DESCRIPTION (MAXIMUM 160 CHARACTERS):
-   - SEO-optimized description for search engines
-   - Include relevant keywords naturally
-   - Compelling and informative for search results
-   - 155-160 characters is ideal
+2. META TITLE (MAXIMUM 60 CHARACTERS):
+   - SEO title for search engines
+   - Include primary keywords
+   - 50-60 characters ideal
 
-3. OG DESCRIPTION (MAXIMUM 160 CHARACTERS):
-   - Optimized for social media sharing (Facebook, LinkedIn)
-   - Engaging and shareable tone
-   - Should encourage clicks from social platforms
-   - 155-160 characters is ideal
+3. META DESCRIPTION (MAXIMUM 160 CHARACTERS):
+   - SEO description for search engines
+   - Include keywords naturally
+   - 155-160 characters ideal
 
-IMPORTANT: Ensure all character limits are strictly followed. The custom_excerpt is especially critical and must not exceed 300 characters.
+4. OG TITLE (MAXIMUM 60 CHARACTERS):
+   - Facebook/LinkedIn title
+   - Can be same as meta_title
+   - 50-60 characters
 
-Return ONLY valid JSON in this exact format (no additional text):
+5. OG DESCRIPTION (MAXIMUM 160 CHARACTERS):
+   - Facebook/LinkedIn description
+   - Can be same as meta_description
+   - 155-160 characters
+
+6. TWITTER TITLE (MAXIMUM 60 CHARACTERS):
+   - Twitter card title
+   - Can be same as meta_title
+   - 50-60 characters
+
+7. TWITTER DESCRIPTION (MAXIMUM 200 CHARACTERS):
+   - Twitter card description
+   - Can be same as meta_description
+   - Max 200 characters for Twitter
+
+IMPORTANT:
+- Ensure all character limits are strictly followed
+- You can use the same text across similar fields
+- ALL 7 FIELDS ARE REQUIRED - Do not omit any field
+- If a field would be the same as another, still include it in the output
+
+Return ONLY valid JSON with ALL 7 FIELDS:
 {
-  "custom_excerpt": "your excerpt here (max 300 chars)",
-  "meta_description": "your meta description here (max 160 chars)",
-  "og_description": "your og description here (max 160 chars)"
+  "custom_excerpt": "...",
+  "meta_title": "...",
+  "meta_description": "...",
+  "og_title": "...",
+  "og_description": "...",
+  "twitter_title": "...",
+  "twitter_description": "..."
 }

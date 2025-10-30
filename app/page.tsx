@@ -19,8 +19,12 @@ interface Post {
   html?: string;
   tags?: Array<{ name: string }>;
   custom_excerpt?: string;
+  meta_title?: string;
   meta_description?: string;
+  og_title?: string;
   og_description?: string;
+  twitter_title?: string;
+  twitter_description?: string;
 }
 
 export default function Home() {
@@ -405,8 +409,12 @@ export default function Home() {
             existingTags={existingTags}
             initialDescriptions={{
               custom_excerpt: selectedPost.custom_excerpt,
+              meta_title: selectedPost.meta_title,
               meta_description: selectedPost.meta_description,
+              og_title: selectedPost.og_title,
               og_description: selectedPost.og_description,
+              twitter_title: selectedPost.twitter_title,
+              twitter_description: selectedPost.twitter_description,
             }}
           />
         )}

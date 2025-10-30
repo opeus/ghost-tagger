@@ -14,8 +14,12 @@ export interface GhostPost {
   plaintext?: string;
   updated_at?: string;
   custom_excerpt?: string;
+  meta_title?: string;
   meta_description?: string;
+  og_title?: string;
   og_description?: string;
+  twitter_title?: string;
+  twitter_description?: string;
 }
 
 export interface GhostTag {
@@ -60,7 +64,7 @@ export async function getAllPosts(): Promise<GhostPost[]> {
       params: {
         key: GHOST_CONTENT_API_KEY,
         limit: "all",
-        fields: "id,title,slug,html,custom_excerpt,meta_description,og_description",
+        fields: "id,title,slug,html,custom_excerpt,meta_title,meta_description,og_title,og_description,twitter_title,twitter_description",
         include: "tags",
       },
       headers: {

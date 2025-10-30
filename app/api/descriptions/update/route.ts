@@ -9,7 +9,16 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { postId, custom_excerpt, meta_description, og_description } = await request.json();
+    const {
+      postId,
+      custom_excerpt,
+      meta_title,
+      meta_description,
+      og_title,
+      og_description,
+      twitter_title,
+      twitter_description
+    } = await request.json();
 
     if (!postId) {
       return NextResponse.json(
@@ -25,9 +34,21 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    if (meta_title && meta_title.length > 60) {
+      return NextResponse.json(
+        { error: "Meta title cannot exceed 60 characters" },
+        { status: 400 }
+      );
+    }
     if (meta_description && meta_description.length > 160) {
       return NextResponse.json(
         { error: "Meta description cannot exceed 160 characters" },
+        { status: 400 }
+      );
+    }
+    if (og_title && og_title.length > 60) {
+      return NextResponse.json(
+        { error: "OG title cannot exceed 60 characters" },
         { status: 400 }
       );
     }
@@ -37,12 +58,28 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    if (twitter_title && twitter_title.length > 60) {
+      return NextResponse.json(
+        { error: "Twitter title cannot exceed 60 characters" },
+        { status: 400 }
+      );
+    }
+    if (twitter_description && twitter_description.length > 200) {
+      return NextResponse.json(
+        { error: "Twitter description cannot exceed 200 characters" },
+        { status: 400 }
+      );
+    }
 
     // Build update payload - only include provided fields
     const updateData: any = {};
     if (custom_excerpt !== undefined) updateData.custom_excerpt = custom_excerpt;
+    if (meta_title !== undefined) updateData.meta_title = meta_title;
     if (meta_description !== undefined) updateData.meta_description = meta_description;
+    if (og_title !== undefined) updateData.og_title = og_title;
     if (og_description !== undefined) updateData.og_description = og_description;
+    if (twitter_title !== undefined) updateData.twitter_title = twitter_title;
+    if (twitter_description !== undefined) updateData.twitter_description = twitter_description;
 
     if (Object.keys(updateData).length === 0) {
       return NextResponse.json(
