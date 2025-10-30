@@ -111,6 +111,10 @@ export async function generateTagSuggestions(
             parts: [{ text: prompt }],
           },
         ],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4000,
+        },
       },
       {
         headers: {
