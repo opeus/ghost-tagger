@@ -7,6 +7,7 @@ import NewColumn from "./components/NewColumn";
 import TagColumn from "./components/TagColumn";
 import LibraryColumn from "./components/LibraryColumn";
 import ArticlePreview from "./components/ArticlePreview";
+import { capitalizeTag, capitalizeTags } from "@/lib/utils";
 
 interface Post {
   id: string;
@@ -72,8 +73,8 @@ export default function Home() {
     setNewTags([]);
     setAiTags([]);
 
-    // Set existing tags
-    const postTags = post.tags?.map((t) => t.name) || [];
+    // Set existing tags (capitalize them)
+    const postTags = post.tags?.map((t) => capitalizeTag(t.name)) || [];
     setExistingTags(postTags);
 
     setStatusMessage(
@@ -103,7 +104,8 @@ export default function Home() {
 
       if (response.ok) {
         const { suggestedTags } = data;
-        setAiTags(suggestedTags);
+        // Capitalize AI-generated tags
+        setAiTags(capitalizeTags(suggestedTags));
         setStatusMessage(`✓ Generated ${suggestedTags.length} AI tag suggestions!`);
       } else {
         setStatusMessage(`Error: ${data.error}`);
@@ -117,8 +119,9 @@ export default function Home() {
 
   // Tag movement handlers
   const addTagToNew = (tag: string) => {
-    if (!newTags.includes(tag)) {
-      setNewTags([...newTags, tag]);
+    const capitalizedTag = capitalizeTag(tag);
+    if (!newTags.includes(capitalizedTag)) {
+      setNewTags([...newTags, capitalizedTag]);
     }
   };
 
