@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import tagLibrary from "@/lib/tag-library.json";
+import { useState, useEffect } from "react";
 
 interface LibraryColumnProps {
   selectedTags: string[];
@@ -10,14 +9,33 @@ interface LibraryColumnProps {
 
 export default function LibraryColumn({ selectedTags, onTagClick }: LibraryColumnProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    new Set(Object.keys(tagLibrary))
-  );
+  const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
+  const [tagLibrary, setTagLibrary] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadLibrary();
+  }, []);
+
+  const loadLibrary = async () => {
+    try {
+      const response = await fetch("/api/library");
+      const data = await response.json();
+      if (response.ok) {
+        setTagLibrary(data.library);
+        setExpandedCategories(new Set(Object.keys(data.library)));
+      }
+    } catch (error) {
+      console.error("Failed to load library:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Parse library into categories
   const categories = Object.entries(tagLibrary).map(([category, tagsString]) => ({
     name: category.replace(/_/g, " "),
-    tags: tagsString.split(",").map((t) => t.trim()),
+    tags: tagsString.split(",").map((t) => t.trim()).filter((t) => t),
   }));
 
   // Filter tags by search
@@ -61,7 +79,11 @@ export default function LibraryColumn({ selectedTags, onTagClick }: LibraryColum
 
       {/* Categories */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
-        {filteredCategories.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+          </div>
+        ) : filteredCategories.length === 0 ? (
           <p className="text-gray-400 text-sm italic text-center py-8">No tags found</p>
         ) : (
           filteredCategories.map((category) => (
