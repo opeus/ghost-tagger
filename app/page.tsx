@@ -8,6 +8,7 @@ import TagColumn from "./components/TagColumn";
 import LibraryColumn from "./components/LibraryColumn";
 import ArticlePreview from "./components/ArticlePreview";
 import LibraryEditor from "./components/LibraryEditor";
+import PromptEditor from "./components/PromptEditor";
 import { capitalizeTag, capitalizeTags } from "@/lib/utils";
 
 interface Post {
@@ -35,6 +36,7 @@ export default function Home() {
   const [statusMessage, setStatusMessage] = useState("");
   const [showPreview, setShowPreview] = useState(false);
   const [showLibraryEditor, setShowLibraryEditor] = useState(false);
+  const [showPromptEditor, setShowPromptEditor] = useState(false);
   const [libraryKey, setLibraryKey] = useState(0); // Force library refresh
 
   useEffect(() => {
@@ -246,6 +248,12 @@ export default function Home() {
                 📚 Edit Library
               </button>
               <button
+                onClick={() => setShowPromptEditor(true)}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition"
+              >
+                🤖 Edit Prompt
+              </button>
+              <button
                 onClick={() => signOut()}
                 className="px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition"
               >
@@ -399,6 +407,11 @@ export default function Home() {
               setLibraryKey(libraryKey + 1); // Force library refresh
             }}
           />
+        )}
+
+        {/* Prompt Editor Modal */}
+        {showPromptEditor && (
+          <PromptEditor onClose={() => setShowPromptEditor(false)} />
         )}
       </div>
     </div>

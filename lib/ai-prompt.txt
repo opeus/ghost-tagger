@@ -1,0 +1,20 @@
+Analyze the following blog article and suggest relevant tags.
+
+Title: {title}
+
+Content: {content}
+
+Existing tags: {existing_tags}
+
+Please provide a list of 10-20 relevant tags for this article. Consider:
+- Main topics and themes (most important)
+- Target audience and context
+- Key concepts and terminology
+- Related subjects and categories
+- Educational context if applicable
+- Industry-specific terms
+- Broader topical areas
+
+Think deeply about the article's content, purpose, and audience. Consider both specific and general tags that would help readers discover this content.
+
+Return ONLY the tag names, one per line, without numbering or bullet points. Order them by relevance, with the most important/primary tag first.

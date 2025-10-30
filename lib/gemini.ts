@@ -1,7 +1,9 @@
 import axios from "axios";
+import { promises as fs } from "fs";
+import path from "path";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
 
 const STOP_WORDS = new Set([
   "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with",
@@ -72,6 +74,19 @@ export function extractKeywords(text: string, maxKeywords: number = 30): Keyword
 }
 
 /**
+ * Load prompt from file
+ */
+async function loadPrompt(): Promise<string> {
+  try {
+    const promptPath = path.join(process.cwd(), "lib", "ai-prompt.txt");
+    return await fs.readFile(promptPath, "utf-8");
+  } catch (error) {
+    console.error("Error loading prompt, using default:", error);
+    return DEFAULT_PROMPT;
+  }
+}
+
+/**
  * Generate tag suggestions using Google Gemini
  */
 export async function generateTagSuggestions(
@@ -80,8 +95,11 @@ export async function generateTagSuggestions(
   existingTags: string[]
 ): Promise<string[]> {
   try {
+    // Load prompt from file
+    const promptTemplate = await loadPrompt();
+
     const existingTagsStr = existingTags.length > 0 ? existingTags.join(", ") : "None";
-    const prompt = DEFAULT_PROMPT.replace("{title}", title)
+    const prompt = promptTemplate.replace("{title}", title)
       .replace("{content}", content.substring(0, 5000))
       .replace("{existing_tags}", existingTagsStr);
 
