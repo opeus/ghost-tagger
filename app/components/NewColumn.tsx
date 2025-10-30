@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -23,6 +24,7 @@ interface NewColumnProps {
   onReorder: (tags: string[]) => void;
   onRemove: (tag: string) => void;
   onClear: () => void;
+  onAdd: (tag: string) => void;
 }
 
 function SortableTag({ tag, index, onRemove }: { tag: string; index: number; onRemove: (tag: string) => void }) {
@@ -75,7 +77,9 @@ function SortableTag({ tag, index, onRemove }: { tag: string; index: number; onR
   );
 }
 
-export default function NewColumn({ tags, onReorder, onRemove, onClear }: NewColumnProps) {
+export default function NewColumn({ tags, onReorder, onRemove, onClear, onAdd }: NewColumnProps) {
+  const [newTag, setNewTag] = useState("");
+
   const sensors = useSensors(
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
@@ -91,6 +95,20 @@ export default function NewColumn({ tags, onReorder, onRemove, onClear }: NewCol
       const newIndex = tags.indexOf(over.id as string);
 
       onReorder(arrayMove(tags, oldIndex, newIndex));
+    }
+  };
+
+  const handleAddTag = () => {
+    const trimmedTag = newTag.trim();
+    if (trimmedTag) {
+      onAdd(trimmedTag);
+      setNewTag("");
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleAddTag();
     }
   };
 
@@ -112,9 +130,28 @@ export default function NewColumn({ tags, onReorder, onRemove, onClear }: NewCol
             </button>
           )}
         </div>
-        <p className="text-xs text-gray-600 italic">
+        <p className="text-xs text-gray-600 italic mb-3">
           Drag to reorder • First tag is PRIMARY
         </p>
+
+        {/* Add Custom Tag Input */}
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={newTag}
+            onChange={(e) => setNewTag(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Type a custom tag..."
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-sm"
+          />
+          <button
+            onClick={handleAddTag}
+            disabled={!newTag.trim()}
+            className="px-4 py-2 bg-green-600 text-white text-sm font-semibold rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+          >
+            + Add
+          </button>
+        </div>
       </div>
 
       {/* Tags List */}

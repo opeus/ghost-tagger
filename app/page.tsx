@@ -362,6 +362,7 @@ export default function Home() {
             onReorder={setNewTags}
             onRemove={removeTagFromNew}
             onClear={clearNewTags}
+            onAdd={addTagToNew}
           />
 
           {/* Existing Column */}
