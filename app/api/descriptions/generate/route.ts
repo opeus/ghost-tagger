@@ -42,9 +42,11 @@ export async function POST(request: NextRequest) {
   try {
     const { title, content, existingTags } = await request.json();
 
+    console.log("Received request - Title:", title, "Content length:", content?.length || 0);
+
     if (!title || !content) {
       return NextResponse.json(
-        { error: "Title and content are required" },
+        { error: "Title and content are required", receivedTitle: !!title, receivedContent: !!content },
         { status: 400 }
       );
     }
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
           contents: [{ parts: [{ text: prompt }] }],
           generationConfig: {
             temperature: 0.7,
-            maxOutputTokens: 500,
+            maxOutputTokens: 2000,
           },
         }),
       }
@@ -87,11 +89,20 @@ export async function POST(request: NextRequest) {
     }
 
     const geminiData = await geminiResponse.json();
+
+    // Log the full response for debugging
+    console.log("Gemini API response:", JSON.stringify(geminiData, null, 2));
+
     const generatedText = geminiData.candidates?.[0]?.content?.parts?.[0]?.text;
 
     if (!generatedText) {
+      console.error("No text in Gemini response. Full response:", geminiData);
       return NextResponse.json(
-        { error: "No response from AI" },
+        {
+          error: "No response from AI",
+          details: geminiData.candidates?.[0]?.finishReason || "Unknown reason",
+          fullResponse: geminiData
+        },
         { status: 500 }
       );
     }
