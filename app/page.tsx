@@ -178,7 +178,15 @@ export default function Home() {
 
       if (response.ok) {
         setStatusMessage("✓ Article updated successfully!");
-        alert("Article tags have been updated successfully!");
+
+        // Show success message with option to open article
+        const openArticle = confirm(
+          `✓ Article tags have been updated successfully!\n\nWould you like to open the article in your blog?`
+        );
+
+        if (openArticle && selectedPost) {
+          window.open(`https://blog.iabacus.com/${selectedPost.slug}/`, '_blank');
+        }
 
         // Reload posts
         await loadPosts();
@@ -264,6 +272,18 @@ export default function Home() {
                 className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center gap-2 whitespace-nowrap"
               >
                 👁️ Preview
+              </button>
+
+              <button
+                onClick={() => {
+                  if (selectedPost) {
+                    window.open(`https://blog.iabacus.com/${selectedPost.slug}/`, '_blank');
+                  }
+                }}
+                disabled={!selectedPost}
+                className="px-6 py-3 bg-indigo-600 text-white rounded-lg font-semibold hover:bg-indigo-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center gap-2 whitespace-nowrap"
+              >
+                🔗 Open Blog
               </button>
 
               <button
