@@ -113,7 +113,7 @@ export async function generateTagSuggestions(
       if (cleanLine) {
         // Split by commas if present
         if (cleanLine.includes(",")) {
-          const splitTags = cleanLine.split(",").map((t) => t.trim()).filter((t) => t);
+          const splitTags = cleanLine.split(",").map((t: string) => t.trim()).filter((t: string) => t);
           tags.push(...splitTags);
         } else {
           tags.push(cleanLine);
