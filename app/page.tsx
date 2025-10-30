@@ -7,6 +7,7 @@ import NewColumn from "./components/NewColumn";
 import TagColumn from "./components/TagColumn";
 import LibraryColumn from "./components/LibraryColumn";
 import ArticlePreview from "./components/ArticlePreview";
+import LibraryEditor from "./components/LibraryEditor";
 import { capitalizeTag, capitalizeTags } from "@/lib/utils";
 
 interface Post {
@@ -33,6 +34,8 @@ export default function Home() {
   const [updating, setUpdating] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [showPreview, setShowPreview] = useState(false);
+  const [showLibraryEditor, setShowLibraryEditor] = useState(false);
+  const [libraryKey, setLibraryKey] = useState(0); // Force library refresh
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -235,12 +238,20 @@ export default function Home() {
               </h1>
               <p className="text-gray-600">AI-powered tagging for your blog articles</p>
             </div>
-            <button
-              onClick={() => signOut()}
-              className="px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition"
-            >
-              Sign Out
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowLibraryEditor(true)}
+                className="px-4 py-2 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition"
+              >
+                📚 Edit Library
+              </button>
+              <button
+                onClick={() => signOut()}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 transition"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
 
@@ -357,7 +368,7 @@ export default function Home() {
           />
 
           {/* Library Column */}
-          <LibraryColumn selectedTags={newTags} onTagClick={addTagToNew} />
+          <LibraryColumn key={libraryKey} selectedTags={newTags} onTagClick={addTagToNew} />
 
           {/* AI Column */}
           <TagColumn
@@ -377,6 +388,16 @@ export default function Home() {
             postId={selectedPost.id}
             postTitle={selectedPost.title}
             onClose={() => setShowPreview(false)}
+          />
+        )}
+
+        {/* Library Editor Modal */}
+        {showLibraryEditor && (
+          <LibraryEditor
+            onClose={() => setShowLibraryEditor(false)}
+            onSave={() => {
+              setLibraryKey(libraryKey + 1); // Force library refresh
+            }}
           />
         )}
       </div>
