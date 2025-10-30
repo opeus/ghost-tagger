@@ -13,6 +13,9 @@ export interface GhostPost {
   html?: string;
   plaintext?: string;
   updated_at?: string;
+  custom_excerpt?: string;
+  meta_description?: string;
+  og_description?: string;
 }
 
 export interface GhostTag {
@@ -57,7 +60,7 @@ export async function getAllPosts(): Promise<GhostPost[]> {
       params: {
         key: GHOST_CONTENT_API_KEY,
         limit: "all",
-        fields: "id,title,slug",
+        fields: "id,title,slug,html,custom_excerpt,meta_description,og_description",
         include: "tags",
       },
       headers: {
@@ -137,5 +140,49 @@ export async function updatePostTags(postId: string, tagNames: string[]): Promis
   } catch (error: any) {
     console.error("Error updating post tags:", error.response?.data || error.message);
     throw new Error(`Failed to update post tags: ${error.message}`);
+  }
+}
+
+/**
+ * Update post with custom data (descriptions, metadata, etc)
+ */
+export async function updateGhostPost(postId: string, updateData: any): Promise<GhostPost> {
+  try {
+    // First, get current post to get updated_at
+    const token = generateJWT();
+    const getResponse = await axios.get(`${GHOST_API_URL}/ghost/api/admin/posts/${postId}/`, {
+      headers: {
+        Authorization: `Ghost ${token}`,
+        "Accept-Version": "v5.0",
+      },
+    });
+
+    const currentPost = getResponse.data.posts[0];
+    const currentUpdatedAt = currentPost.updated_at;
+
+    // Update with new data
+    const payload = {
+      posts: [
+        {
+          id: postId,
+          ...updateData,
+          updated_at: currentUpdatedAt,
+        },
+      ],
+    };
+
+    const newToken = generateJWT();
+    const updateResponse = await axios.put(`${GHOST_API_URL}/ghost/api/admin/posts/${postId}/`, payload, {
+      headers: {
+        Authorization: `Ghost ${newToken}`,
+        "Accept-Version": "v5.0",
+        "Content-Type": "application/json",
+      },
+    });
+
+    return updateResponse.data.posts[0];
+  } catch (error: any) {
+    console.error("Error updating post:", error.response?.data || error.message);
+    throw new Error(`Failed to update post: ${error.message}`);
   }
 }

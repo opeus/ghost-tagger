@@ -9,13 +9,18 @@ import LibraryColumn from "./components/LibraryColumn";
 import ArticlePreview from "./components/ArticlePreview";
 import LibraryEditor from "./components/LibraryEditor";
 import PromptEditor from "./components/PromptEditor";
+import DescriptionsEditor from "./components/DescriptionsEditor";
 import { capitalizeTag, capitalizeTags } from "@/lib/utils";
 
 interface Post {
   id: string;
   title: string;
   slug: string;
+  html?: string;
   tags?: Array<{ name: string }>;
+  custom_excerpt?: string;
+  meta_description?: string;
+  og_description?: string;
 }
 
 export default function Home() {
@@ -390,6 +395,21 @@ export default function Home() {
             count={aiTags.length}
           />
         </div>
+
+        {/* Descriptions Editor Section */}
+        {selectedPost && (
+          <DescriptionsEditor
+            postId={selectedPost.id}
+            postTitle={selectedPost.title}
+            postContent={selectedPost.html || ""}
+            existingTags={existingTags}
+            initialDescriptions={{
+              custom_excerpt: selectedPost.custom_excerpt,
+              meta_description: selectedPost.meta_description,
+              og_description: selectedPost.og_description,
+            }}
+          />
+        )}
 
         {/* Article Preview Modal */}
         {showPreview && selectedPost && (

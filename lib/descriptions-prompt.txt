@@ -1,0 +1,35 @@
+Analyze this article and generate THREE descriptions for SEO and social media:
+
+Title: {title}
+Content: {content}
+Existing Tags: {existing_tags}
+
+Generate the following descriptions:
+
+1. CUSTOM EXCERPT (CRITICAL - MAXIMUM 300 CHARACTERS):
+   - This is the MOST IMPORTANT field
+   - Brief, engaging summary of the article
+   - Should entice readers to click and read more
+   - MUST be 300 characters or less (HARD LIMIT)
+   - Count carefully - this cannot exceed 300 characters
+
+2. META DESCRIPTION (MAXIMUM 160 CHARACTERS):
+   - SEO-optimized description for search engines
+   - Include relevant keywords naturally
+   - Compelling and informative for search results
+   - 155-160 characters is ideal
+
+3. OG DESCRIPTION (MAXIMUM 160 CHARACTERS):
+   - Optimized for social media sharing (Facebook, LinkedIn)
+   - Engaging and shareable tone
+   - Should encourage clicks from social platforms
+   - 155-160 characters is ideal
+
+IMPORTANT: Ensure all character limits are strictly followed. The custom_excerpt is especially critical and must not exceed 300 characters.
+
+Return ONLY valid JSON in this exact format (no additional text):
+{
+  "custom_excerpt": "your excerpt here (max 300 chars)",
+  "meta_description": "your meta description here (max 160 chars)",
+  "og_description": "your og description here (max 160 chars)"
+}
