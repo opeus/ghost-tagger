@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import NewColumn from "./components/NewColumn";
 import TagColumn from "./components/TagColumn";
 import LibraryColumn from "./components/LibraryColumn";
+import ArticlePreview from "./components/ArticlePreview";
 
 interface Post {
   id: string;
@@ -30,6 +31,7 @@ export default function Home() {
   const [generating, setGenerating] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [showPreview, setShowPreview] = useState(false);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -254,6 +256,14 @@ export default function Home() {
 
             <div className="flex gap-3">
               <button
+                onClick={() => setShowPreview(true)}
+                disabled={!selectedPost}
+                className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center gap-2 whitespace-nowrap"
+              >
+                👁️ Preview
+              </button>
+
+              <button
                 onClick={generateAITags}
                 disabled={!selectedPost || generating}
                 className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center gap-2 whitespace-nowrap"
@@ -337,6 +347,15 @@ export default function Home() {
             count={aiTags.length}
           />
         </div>
+
+        {/* Article Preview Modal */}
+        {showPreview && selectedPost && (
+          <ArticlePreview
+            postId={selectedPost.id}
+            postTitle={selectedPost.title}
+            onClose={() => setShowPreview(false)}
+          />
+        )}
       </div>
     </div>
   );
