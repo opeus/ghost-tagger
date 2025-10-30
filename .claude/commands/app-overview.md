@@ -46,6 +46,8 @@ A Next.js web application for tagging Ghost CMS blog articles using AI (Google G
 - **Save Confirmation**: Dialog with option to open article after saving
 - **Consistent Capitalization**: Auto-capitalizes first letter of each word, preserves acronyms
 - **Uniform Tag Display**: Compact, consistent styling across all columns
+- **Custom Tag Input**: Text field in New column to manually add custom tags with Enter key support
+- **Metadata Editor**: AI-generated SEO and social media metadata (7 fields total)
 
 ## File Structure
 
@@ -61,21 +63,25 @@ A Next.js web application for tagging Ghost CMS blog articles using AI (Google G
 - `app/api/tags/update/route.ts` - Save tags to Ghost article
 - `app/api/library/route.ts` - Read/write tag library JSON
 - `app/api/prompt/route.ts` - Read/write AI prompt text file
+- `app/api/descriptions/generate/route.ts` - Generate SEO/social metadata with AI
+- `app/api/descriptions/update/route.ts` - Save metadata to Ghost article
 
 ### Components
-- `app/components/NewColumn.tsx` - Drag-and-drop selected tags column
+- `app/components/NewColumn.tsx` - Drag-and-drop selected tags column with custom tag input
 - `app/components/TagColumn.tsx` - Reusable column for Existing/AI tags
 - `app/components/LibraryColumn.tsx` - Categorized library with search
 - `app/components/ArticlePreview.tsx` - Article preview modal
 - `app/components/LibraryEditor.tsx` - Edit tag library JSON
 - `app/components/PromptEditor.tsx` - Edit AI prompt template
+- `app/components/DescriptionsEditor.tsx` - SEO/social metadata editor with AI generation
 
 ### Library Files
 - `lib/ghost.ts` - Ghost CMS API integration (Admin & Content APIs)
 - `lib/gemini.ts` - Google Gemini API integration
 - `lib/utils.ts` - Tag capitalization utilities
 - `lib/tag-library.json` - Categorized tag library
-- `lib/ai-prompt.txt` - Editable AI prompt template
+- `lib/ai-prompt.txt` - Editable AI prompt template for tags
+- `lib/descriptions-prompt.txt` - AI prompt template for metadata generation
 
 ## Environment Variables
 Required in `.env.local` and Railway:
@@ -110,10 +116,29 @@ APP_PASSWORD=iabacus4dm1n
 - Prevents stale data after editing
 
 ### AI Prompt System
-- Template stored in `lib/ai-prompt.txt`
-- Variables: {title}, {content}, {existing_tags}
-- Editable through UI (PromptEditor component)
-- Falls back to DEFAULT_PROMPT if file read fails
+- Tag prompt template: `lib/ai-prompt.txt`
+  - Variables: {title}, {content}, {existing_tags}
+  - Editable through UI (PromptEditor component)
+  - Falls back to DEFAULT_PROMPT if file read fails
+- Metadata prompt template: `lib/descriptions-prompt.txt`
+  - Variables: {title}, {content}, {existing_tags}
+  - Not editable through UI (static file)
+  - Generates 7 fields: custom_excerpt, meta_title, meta_description, og_title, og_description, twitter_title, twitter_description
+
+### Metadata Generation System
+- **AI-Powered**: Uses Gemini 2.5 Pro with 4000 token limit
+- **7 Metadata Fields**:
+  1. **Custom Excerpt** (300 chars) - Hard limit enforced (Ghost requirement)
+  2. **Meta Title** (60 chars recommended) - SEO title
+  3. **Meta Description** (160 chars recommended) - SEO description
+  4. **OG Title** (60 chars recommended) - Open Graph for Facebook/LinkedIn
+  5. **OG Description** (160 chars recommended) - Open Graph description
+  6. **Twitter Title** (60 chars recommended) - Twitter card title
+  7. **Twitter Description** (200 chars recommended) - Twitter card description
+- **Character Limits**: Only custom_excerpt is hard-limited. Other fields are flexible (Ghost accepts slightly longer)
+- **UI Organization**: Color-coded sections (yellow for excerpt, blue for SEO, purple for Open Graph, cyan for Twitter)
+- **Character Counters**: Show current/max with color coding (yellow approaching limit, red over recommended)
+- **No Auto-Truncation**: Fields show full AI-generated text without "..." truncation
 
 ## Development
 
@@ -160,6 +185,16 @@ npm run dev
 - **Solution**: Add explicit `(t: string)` type annotations
 - **Fixed in**: lib/gemini.ts
 
+### AI Metadata Generation MAX_TOKENS Error
+- **Cause**: Gemini 2.5 Pro maxOutputTokens set too low (500), AI used 499 for internal thoughts
+- **Solution**: Increased maxOutputTokens to 4000 for both tag and metadata generation
+- **Fixed in**: commits 7ed1293
+
+### Metadata Fields Auto-Truncated with "..."
+- **Cause**: Server-side truncation when AI exceeded recommended character limits
+- **Solution**: Removed auto-truncation except for custom_excerpt (hard Ghost limit)
+- **Fixed in**: commit 60709e7
+
 ## Key User Requests
 1. Web app instead of desktop (Railway deployment)
 2. 4-column workflow (New, Existing, Library, AI)
@@ -170,6 +205,9 @@ npm run dev
 7. Article preview functionality
 8. Open blog article link
 9. Save confirmation dialog
+10. Custom tag input field (manual entry)
+11. Comprehensive metadata editor with 7 SEO/social fields
+12. Allow flexible character limits (only excerpt strictly enforced)
 
 ## Future Considerations
 - Add tag analytics (most used, recent, etc.)
