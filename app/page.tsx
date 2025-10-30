@@ -3,8 +3,9 @@
 import { useSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import TagList, { Tag } from "./components/TagList";
-import WordCloud from "./components/WordCloud";
+import NewColumn from "./components/NewColumn";
+import TagColumn from "./components/TagColumn";
+import LibraryColumn from "./components/LibraryColumn";
 
 interface Post {
   id: string;
@@ -13,23 +14,17 @@ interface Post {
   tags?: Array<{ name: string }>;
 }
 
-interface Keyword {
-  word: string;
-  count: number;
-}
-
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
   const [posts, setPosts] = useState<Post[]>([]);
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-  const [tags, setTags] = useState<Tag[]>([]);
-  const [keywords, setKeywords] = useState<Keyword[]>([]);
-  const [existingTags, setExistingTags] = useState<string[]>([]);
 
-  const [tocChecked, setTocChecked] = useState(false);
-  const [sidebarChecked, setSidebarChecked] = useState(false);
+  // Column states
+  const [newTags, setNewTags] = useState<string[]>([]);
+  const [existingTags, setExistingTags] = useState<string[]>([]);
+  const [aiTags, setAiTags] = useState<string[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -70,32 +65,27 @@ export default function Home() {
     if (!post) return;
 
     setSelectedPost(post);
-    setKeywords([]);
 
+    // Reset columns
+    setNewTags([]);
+    setAiTags([]);
+
+    // Set existing tags
     const postTags = post.tags?.map((t) => t.name) || [];
     setExistingTags(postTags);
 
-    const tagItems: Tag[] = postTags.map((name, index) => ({
-      id: `existing-${index}`,
-      name,
-      isNew: false,
-      isAI: false,
-      selected: true,
-    }));
-
-    setTags(tagItems);
     setStatusMessage(
       postTags.length > 0
-        ? `Article has ${postTags.length} existing tags. Click 'Generate AI Tags' or add custom tags.`
-        : "No existing tags. Click 'Generate AI Tags' or add custom tags."
+        ? `Article has ${postTags.length} existing tags. Add tags to the New column.`
+        : "No existing tags. Add tags from Library or generate AI suggestions."
     );
   };
 
-  const generateTags = async () => {
+  const generateAITags = async () => {
     if (!selectedPost) return;
 
     setGenerating(true);
-    setStatusMessage("🤖 Generating AI tags and extracting keywords...");
+    setStatusMessage("🤖 Generating AI tag suggestions...");
 
     try {
       const response = await fetch("/api/tags/generate", {
@@ -110,43 +100,9 @@ export default function Home() {
       const data = await response.json();
 
       if (response.ok) {
-        const { suggestedTags, keywords: extractedKeywords } = data;
-
-        // Merge AI tags with existing
-        const allTags: Tag[] = [];
-
-        // Add AI-suggested tags (check if they're actually new)
-        suggestedTags.forEach((tagName: string, index: number) => {
-          const isActuallyNew = !existingTags.includes(tagName);
-          allTags.push({
-            id: `ai-${index}`,
-            name: tagName,
-            isNew: isActuallyNew,
-            isAI: true,
-            selected: true,
-          });
-        });
-
-        // Add existing tags that weren't suggested
-        existingTags.forEach((tagName, index) => {
-          if (!allTags.find((t) => t.name === tagName)) {
-            allTags.push({
-              id: `existing-${index}`,
-              name: tagName,
-              isNew: false,
-              isAI: false,
-              selected: true,
-            });
-          }
-        });
-
-        setTags(allTags);
-        setKeywords(extractedKeywords);
-
-        const newCount = allTags.filter((t) => t.isNew).length;
-        setStatusMessage(
-          `✓ Generated ${newCount} AI suggestions + ${extractedKeywords.length} keywords. Click keywords to add as tags!`
-        );
+        const { suggestedTags } = data;
+        setAiTags(suggestedTags);
+        setStatusMessage(`✓ Generated ${suggestedTags.length} AI tag suggestions!`);
       } else {
         setStatusMessage(`Error: ${data.error}`);
       }
@@ -157,78 +113,45 @@ export default function Home() {
     }
   };
 
-  const handleAddCustomTag = () => {
-    const tagName = prompt("Enter custom tag name:");
-    if (!tagName || !tagName.trim()) return;
-
-    const trimmedName = tagName.trim();
-
-    // Check if already exists
-    if (tags.find((t) => t.name.toLowerCase() === trimmedName.toLowerCase())) {
-      alert(`Tag '${trimmedName}' already exists in the list.`);
-      return;
+  // Tag movement handlers
+  const addTagToNew = (tag: string) => {
+    if (!newTags.includes(tag)) {
+      setNewTags([...newTags, tag]);
     }
-
-    const isNew = !existingTags.includes(trimmedName);
-    const newTag: Tag = {
-      id: `manual-${Date.now()}`,
-      name: trimmedName,
-      isNew,
-      isAI: false,
-      selected: true,
-    };
-
-    setTags([...tags, newTag]);
-    setStatusMessage(`✓ Added custom tag: ${trimmedName}`);
   };
 
-  const handleKeywordClick = (word: string) => {
-    const tagName = word.charAt(0).toUpperCase() + word.slice(1);
+  const removeTagFromNew = (tag: string) => {
+    setNewTags(newTags.filter((t) => t !== tag));
+  };
 
-    // Check if already exists
-    if (tags.find((t) => t.name.toLowerCase() === tagName.toLowerCase())) {
-      alert(`Tag '${tagName}' already exists in the list.`);
-      return;
-    }
+  const clearNewTags = () => {
+    setNewTags([]);
+  };
 
-    const isNew = !existingTags.includes(tagName);
-    const newTag: Tag = {
-      id: `keyword-${Date.now()}`,
-      name: tagName,
-      isNew,
-      isAI: false,
-      selected: true,
-    };
+  const addAllExisting = () => {
+    const tagsToAdd = existingTags.filter((tag) => !newTags.includes(tag));
+    setNewTags([...newTags, ...tagsToAdd]);
+  };
 
-    setTags([...tags, newTag]);
-    setStatusMessage(`✓ Added keyword as tag: ${tagName}`);
+  const addAllAI = () => {
+    const tagsToAdd = aiTags.filter((tag) => !newTags.includes(tag));
+    setNewTags([...newTags, ...tagsToAdd]);
   };
 
   const updateArticle = async () => {
     if (!selectedPost) return;
 
-    const selectedTags = tags.filter((t) => t.selected).map((t) => t.name);
-
-    if (selectedTags.length === 0) {
-      alert("Please select at least one tag.");
+    if (newTags.length === 0) {
+      alert("Please add at least one tag to the New column.");
       return;
     }
 
-    // Add special tags
-    const finalTags = [...selectedTags];
-    if (tocChecked && !finalTags.includes("#toc")) {
-      finalTags.push("#toc");
-    }
-    if (sidebarChecked && !finalTags.includes("#sidebar")) {
-      finalTags.push("#sidebar");
-    }
-
-    const tagList = finalTags
+    const tagList = newTags
       .map((tag, i) => `  ${i + 1}. ${tag}${i === 0 ? " ← PRIMARY" : ""}`)
       .join("\n");
 
     const confirmed = confirm(
-      `Update article with these ${finalTags.length} tags in this order?\n\n${tagList}`
+      `Update article with these ${newTags.length} tags in this order?\n\n${tagList}`
     );
 
     if (!confirmed) return;
@@ -242,7 +165,7 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           postId: selectedPost.id,
-          tags: finalTags,
+          tags: newTags,
         }),
       });
 
@@ -257,10 +180,9 @@ export default function Home() {
 
         // Clear selection
         setSelectedPost(null);
-        setTags([]);
-        setKeywords([]);
-        setTocChecked(false);
-        setSidebarChecked(false);
+        setNewTags([]);
+        setExistingTags([]);
+        setAiTags([]);
       } else {
         setStatusMessage(`Error: ${data.error}`);
         alert(`Error: ${data.error}`);
@@ -290,7 +212,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-6">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-[1800px] mx-auto">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between">
@@ -309,56 +231,70 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Article Selection */}
+        {/* Article Selection & Actions */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-4">1. Select Article</h2>
-          <div className="flex flex-col sm:flex-row gap-4">
-            <select
-              value={selectedPost?.id || ""}
-              onChange={(e) => handlePostSelect(e.target.value)}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="">-- Select an article --</option>
-              {posts.map((post) => (
-                <option key={post.id} value={post.id}>
-                  {post.title} [{post.tags?.length || 0} tags]
-                </option>
-              ))}
-            </select>
+          <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center">
+            <div className="flex-1 w-full">
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Select Article
+              </label>
+              <select
+                value={selectedPost?.id || ""}
+                onChange={(e) => handlePostSelect(e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">-- Select an article --</option>
+                {posts.map((post) => (
+                  <option key={post.id} value={post.id}>
+                    {post.title} [{post.tags?.length || 0} tags]
+                  </option>
+                ))}
+              </select>
+            </div>
 
-            <button
-              onClick={generateTags}
-              disabled={!selectedPost || generating}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center gap-2 whitespace-nowrap"
-            >
-              {generating ? (
-                <>
-                  <svg
-                    className="animate-spin h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    ></circle>
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    ></path>
-                  </svg>
-                  Generating...
-                </>
-              ) : (
-                <>🤖 Generate AI Tags</>
-              )}
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={generateAITags}
+                disabled={!selectedPost || generating}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center gap-2 whitespace-nowrap"
+              >
+                {generating ? (
+                  <>
+                    <svg
+                      className="animate-spin h-5 w-5"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    Generating...
+                  </>
+                ) : (
+                  <>🤖 Generate AI Tags</>
+                )}
+              </button>
+
+              <button
+                onClick={updateArticle}
+                disabled={!selectedPost || newTags.length === 0 || updating}
+                className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center gap-2 whitespace-nowrap"
+              >
+                {updating ? "Saving..." : "💾 Save Tags"}
+              </button>
+            </div>
           </div>
 
           {statusMessage && (
@@ -366,80 +302,41 @@ export default function Home() {
           )}
         </div>
 
-        {/* Word Cloud */}
-        {keywords.length > 0 && (
-          <WordCloud keywords={keywords} onKeywordClick={handleKeywordClick} />
-        )}
+        {/* 4-Column Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6" style={{ minHeight: "600px" }}>
+          {/* New Column */}
+          <NewColumn
+            tags={newTags}
+            onReorder={setNewTags}
+            onRemove={removeTagFromNew}
+            onClear={clearNewTags}
+          />
 
-        {/* Tag List */}
-        {tags.length > 0 && (
-          <TagList tags={tags} onTagsChange={setTags} onAddCustomTag={handleAddCustomTag} />
-        )}
+          {/* Existing Column */}
+          <TagColumn
+            title="Existing"
+            tags={existingTags}
+            selectedTags={newTags}
+            onTagClick={addTagToNew}
+            showAddAll={true}
+            onAddAll={addAllExisting}
+            count={existingTags.length}
+          />
 
-        {/* Special Tags */}
-        {tags.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mt-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">3. Special Ghost Tags</h2>
-            <div className="flex gap-6">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={tocChecked}
-                  onChange={(e) => setTocChecked(e.target.checked)}
-                  className="w-5 h-5 rounded"
-                />
-                <span className="font-medium">#toc (Table of Contents)</span>
-              </label>
+          {/* Library Column */}
+          <LibraryColumn selectedTags={newTags} onTagClick={addTagToNew} />
 
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={sidebarChecked}
-                  onChange={(e) => setSidebarChecked(e.target.checked)}
-                  className="w-5 h-5 rounded"
-                />
-                <span className="font-medium">#sidebar (Add to sidebar)</span>
-              </label>
-            </div>
-          </div>
-        )}
-
-        {/* Update Button */}
-        {tags.length > 0 && (
-          <button
-            onClick={updateArticle}
-            disabled={updating}
-            className="w-full mt-6 px-6 py-4 bg-green-600 text-white rounded-xl font-bold text-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition shadow-lg"
-          >
-            {updating ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg
-                  className="animate-spin h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                  ></path>
-                </svg>
-                Updating...
-              </span>
-            ) : (
-              "📝 Update Article Tags"
-            )}
-          </button>
-        )}
+          {/* AI Column */}
+          <TagColumn
+            title="AI"
+            tags={aiTags}
+            selectedTags={newTags}
+            onTagClick={addTagToNew}
+            showAddAll={true}
+            onAddAll={addAllAI}
+            count={aiTags.length}
+          />
+        </div>
       </div>
     </div>
   );

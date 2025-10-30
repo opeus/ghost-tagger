@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { getPostContent } from "@/lib/ghost";
-import { generateTagSuggestions, extractKeywords } from "@/lib/gemini";
+import { generateTagSuggestions } from "@/lib/gemini";
 
 export async function POST(request: NextRequest) {
   const session = await getServerSession();
@@ -27,10 +27,7 @@ export async function POST(request: NextRequest) {
       existingTags || []
     );
 
-    // Extract keywords
-    const keywords = extractKeywords(post.title + " " + content);
-
-    return NextResponse.json({ suggestedTags, keywords });
+    return NextResponse.json({ suggestedTags });
   } catch (error: any) {
     console.error("Error generating tags:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
