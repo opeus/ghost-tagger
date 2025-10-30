@@ -27,46 +27,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate character limits
+    // Only enforce hard limit on custom_excerpt (Ghost requirement)
+    // Other fields can be slightly longer - Ghost is flexible with them
     if (custom_excerpt && custom_excerpt.length > 300) {
       return NextResponse.json(
         { error: "Custom excerpt cannot exceed 300 characters" },
-        { status: 400 }
-      );
-    }
-    if (meta_title && meta_title.length > 60) {
-      return NextResponse.json(
-        { error: "Meta title cannot exceed 60 characters" },
-        { status: 400 }
-      );
-    }
-    if (meta_description && meta_description.length > 160) {
-      return NextResponse.json(
-        { error: "Meta description cannot exceed 160 characters" },
-        { status: 400 }
-      );
-    }
-    if (og_title && og_title.length > 60) {
-      return NextResponse.json(
-        { error: "OG title cannot exceed 60 characters" },
-        { status: 400 }
-      );
-    }
-    if (og_description && og_description.length > 160) {
-      return NextResponse.json(
-        { error: "OG description cannot exceed 160 characters" },
-        { status: 400 }
-      );
-    }
-    if (twitter_title && twitter_title.length > 60) {
-      return NextResponse.json(
-        { error: "Twitter title cannot exceed 60 characters" },
-        { status: 400 }
-      );
-    }
-    if (twitter_description && twitter_description.length > 200) {
-      return NextResponse.json(
-        { error: "Twitter description cannot exceed 200 characters" },
         { status: 400 }
       );
     }

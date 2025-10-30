@@ -134,27 +134,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate and truncate if necessary
+    // Only enforce hard limit on custom_excerpt (Ghost requirement)
+    // Other fields can be slightly longer - Ghost is flexible with them
     if (descriptions.custom_excerpt && descriptions.custom_excerpt.length > 300) {
       descriptions.custom_excerpt = descriptions.custom_excerpt.substring(0, 297) + "...";
-    }
-    if (descriptions.meta_title && descriptions.meta_title.length > 60) {
-      descriptions.meta_title = descriptions.meta_title.substring(0, 57) + "...";
-    }
-    if (descriptions.meta_description && descriptions.meta_description.length > 160) {
-      descriptions.meta_description = descriptions.meta_description.substring(0, 157) + "...";
-    }
-    if (descriptions.og_title && descriptions.og_title.length > 60) {
-      descriptions.og_title = descriptions.og_title.substring(0, 57) + "...";
-    }
-    if (descriptions.og_description && descriptions.og_description.length > 160) {
-      descriptions.og_description = descriptions.og_description.substring(0, 157) + "...";
-    }
-    if (descriptions.twitter_title && descriptions.twitter_title.length > 60) {
-      descriptions.twitter_title = descriptions.twitter_title.substring(0, 57) + "...";
-    }
-    if (descriptions.twitter_description && descriptions.twitter_description.length > 200) {
-      descriptions.twitter_description = descriptions.twitter_description.substring(0, 197) + "...";
     }
 
     return NextResponse.json({ descriptions });

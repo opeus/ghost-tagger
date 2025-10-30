@@ -87,35 +87,12 @@ export default function DescriptionsEditor({
   };
 
   const saveDescriptions = async () => {
-    // Validate character limits
+    // Only enforce hard limit on custom_excerpt (Ghost requirement)
     if (customExcerpt.length > 300) {
       setError("Custom excerpt cannot exceed 300 characters!");
       return;
     }
-    if (metaTitle.length > 60) {
-      setError("Meta title cannot exceed 60 characters!");
-      return;
-    }
-    if (metaDescription.length > 160) {
-      setError("Meta description cannot exceed 160 characters!");
-      return;
-    }
-    if (ogTitle.length > 60) {
-      setError("OG title cannot exceed 60 characters!");
-      return;
-    }
-    if (ogDescription.length > 160) {
-      setError("OG description cannot exceed 160 characters!");
-      return;
-    }
-    if (twitterTitle.length > 60) {
-      setError("Twitter title cannot exceed 60 characters!");
-      return;
-    }
-    if (twitterDescription.length > 200) {
-      setError("Twitter description cannot exceed 200 characters!");
-      return;
-    }
+    // Other fields can be slightly longer - Ghost is flexible with them
 
     setSaving(true);
     setError("");
