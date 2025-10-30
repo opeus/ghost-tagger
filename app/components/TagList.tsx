@@ -246,7 +246,7 @@ export default function TagList({ tags, onTagsChange, onAddCustomTag }: TagListP
         </button>
       </div>
 
-      <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
+      <div className="space-y-2">
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={tags.map((t) => t.id)} strategy={verticalListSortingStrategy}>
             {tags.map((tag, index) => (

@@ -312,7 +312,7 @@ export default function Home() {
         {/* Article Selection */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <h2 className="text-xl font-bold text-gray-900 mb-4">1. Select Article</h2>
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <select
               value={selectedPost?.id || ""}
               onChange={(e) => handlePostSelect(e.target.value)}
@@ -329,7 +329,7 @@ export default function Home() {
             <button
               onClick={generateTags}
               disabled={!selectedPost || generating}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center gap-2"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition flex items-center gap-2 whitespace-nowrap"
             >
               {generating ? (
                 <>
