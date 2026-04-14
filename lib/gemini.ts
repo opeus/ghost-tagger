@@ -3,7 +3,7 @@ import { promises as fs } from "fs";
 import path from "path";
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent";
 
 const STOP_WORDS = new Set([
   "the", "be", "to", "of", "and", "a", "in", "that", "have", "i", "it", "for", "not", "on", "with",

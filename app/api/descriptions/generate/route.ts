@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import * as fs from "fs/promises";
 import * as path from "path";
 
-const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-pro:generateContent";
+const GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-pro-preview:generateContent";
 const PROMPT_PATH = path.join(process.cwd(), "lib", "descriptions-prompt.txt");
 
 const DEFAULT_PROMPT = `Analyze this article and generate metadata for SEO and social media:
